@@ -678,32 +678,45 @@ class NekoPlayer {
     }
 
     setupAudioGraph() {
-        // 关闭旧上下文（避免内存泄漏）
-        if (this.audioContext) {
-            try { this.audioContext.close(); } catch (e) {}
+        // 1. 全局只初始化一次 AudioContext 和 SourceNode
+        if (!this.audioContext) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.audioContext = new AudioContext();
+            
+            // 核心修复点：SourceNode 只能对同一个 audio 元素创建一次
+            this.sourceNode = this.audioContext.createMediaElementSource(this.audio);
+            this.masterGain = this.audioContext.createGain();
         }
 
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        this.audioContext = new AudioContext();
+        // 应对浏览器的自动播放限制，确保上下文处于运行状态
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
 
-        // 创建 source（绑定 <audio> 元素）
-        this.sourceNode = this.audioContext.createMediaElementSource(this.audio);
+        // 2. 先断开所有已有的连接，准备重新布线
+        this.sourceNode.disconnect();
+        if (this.bassBoostFilters && this.bassBoostFilters.length > 0) {
+            this.bassBoostFilters.forEach(filter => filter.disconnect());
+        }
+        this.masterGain.disconnect();
 
-        // 创建增益节点作为统一输出（便于静音/音量控制扩展）
-        this.masterGain = this.audioContext.createGain();
-
-        // 连接逻辑
+        // 3. 重新建立连接逻辑
         let currentNode = this.sourceNode;
 
         if (this.isBassBoostEnabled) {
-            this.bassBoostFilters = this.createBassBoostChain(this.audioContext);
+            // 如果还没创建过滤波器，就创建一次
+            if (!this.bassBoostFilters) {
+                this.bassBoostFilters = this.createBassBoostChain(this.audioContext);
+            }
+            
+            // 将音频流依次穿过所有的低音滤波器
             this.bassBoostFilters.forEach(filter => {
                 currentNode.connect(filter);
-                currentNode = filter;
+                currentNode = filter; // 指针后移
             });
         }
 
-        // 最终连到 master gain → destination
+        // 4. 最终连到 master gain → destination (扬声器)
         currentNode.connect(this.masterGain);
         this.masterGain.connect(this.audioContext.destination);
     }
