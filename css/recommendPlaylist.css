@@ -1,0 +1,126 @@
+/* 重置推荐区域的盒模型，避免 MDUI 干扰 */
+.recommend-list,
+.recommend-list *,
+.recommend-item,
+.recommend-item * {
+    box-sizing: border-box;
+}
+
+/* 推荐歌单容器：响应式网格 */
+.recommend-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.2rem;
+    padding: 1rem 0.5rem;
+    margin: 0;
+    list-style: none;
+}
+
+/* 单个歌单项：固定内部结构 */
+.recommend-item {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 220px;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* === 封面图 === */
+.recommend-item-img {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding-bottom: 100%; /* 1:1 正方形 */
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #eee;
+    text-decoration: none !important;
+}
+
+.recommend-item-img-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+}
+
+/* === 标题 === */
+.recommend-item-title {
+    display: block;
+    margin: 0.6rem 0 0.3rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #333;
+    text-decoration: none !important;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+}
+
+/* === 播放/收藏信息 === */
+.recommend-item-meta {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+}
+
+/* === 标签区域 === */
+.recommend-item-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.recommend-item-tag {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    background-color: #f0f0f0;
+    color: #666;
+    font-size: 0.7rem;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+/* === 创建者信息 === */
+.recommend-item-creator {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #777;
+    text-decoration: none !important;
+}
+
+.recommend-item-creator img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.4rem;
+    border: 1px solid #ddd;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .recommend-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .recommend-list {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+}

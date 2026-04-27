@@ -1,0 +1,358 @@
+/* play-new.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #2c3e50, #4ca1af);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* --- Header --- */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+.icon-button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+}
+.app-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+/* --- Main Content --- */
+.main-content {
+    display: flex;
+    flex: 1;
+    padding: 1rem;
+    gap: 2rem;
+    overflow: hidden;
+}
+
+/* Player Sidebar */
+.player-sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 320px;
+    gap: 1.5rem;
+}
+
+.album-art-container {
+    width: 280px;
+    height: 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+.album-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.player-controls {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.control-row {
+    display: flex;
+    gap: 1.5rem;
+}
+.control-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.control-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+.control-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.control-btn.active {
+    color: #ff4081;
+}
+.play-pause-btn {
+    width: 64px;
+    height: 64px;
+    background: white;
+    color: #2c3e50;
+}
+
+/* Progress Bar */
+.progress-section {
+    width: 100%;
+}
+.time-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+}
+.progress-bar {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+}
+.progress-filled {
+    height: 100%;
+    background-color: white;
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.progress-bar:hover .progress-handle {
+    opacity: 1;
+}
+
+/* Volume Control */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.volume-slider {
+    -webkit-appearance: none;
+    width: 100px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+}
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+}
+
+/* Lyrics Section */
+.lyrics-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+}
+.song-info {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.song-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.song-artist {
+    color: #ccc;
+    font-size: 1.125rem;
+}
+
+.lyrics-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    border-radius: 12px;
+    backdrop-filter: blur(0px);
+}
+.lyrics-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20vh; /* 初始偏移，让第一行居中 */
+    padding-bottom: 20vh;
+}
+.lyrics-line {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    padding: 0.75rem 0;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.lyrics-line.active {
+    color: white;
+    transform: scale(1.05);
+    font-weight: 600;
+}
+.lyrics-original {
+    font-size: 1.25rem;
+    line-height: 1.4;
+}
+.lyrics-translate {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.25rem;
+}
+
+/* Scrollbar */
+.lyrics-container::-webkit-scrollbar {
+    width: 6px;
+}
+.lyrics-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.lyrics-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+/* --- Footer --- */
+.app-footer {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+    gap: 2rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+.footer-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* === 动态背景 === */
+#background-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-size: cover;
+background-position: center center;
+background-repeat: no-repeat;
+filter: blur(30px); /* 高斯模糊 */
+transform: scale(1.1); /* 稍微放大避免边缘露白 */
+z-index: -1; /* 置于底层 */
+transition: background-image 0.6s ease; /* 平滑切换 */
+}
+
+/* 暗色遮罩层（提升文字对比度） */
+#background-overlay::after {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.6); /* 黑色半透明遮罩 */
+backdrop-filter: none; /* 遮罩不需要模糊 */
+}
+
+/* === 基础响应式：移动端适配 === */
+@media (max-width: 768px) {
+    .app-main {
+        padding: 16px;
+        min-height: calc(100vh - 120px); /* 预留底部按钮空间 */
+    }
+
+    .album-art-container {
+        width: 220px;
+        height: 220px;
+        margin: 0 auto 24px;
+    }
+
+    .song-info {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .song-title {
+        font-size: 1.4rem;
+    }
+
+    .artist-name {
+        font-size: 1rem;
+    }
+
+    .lyrics-container.show {
+        display: block;
+    }
+
+    /* 歌词行样式 */
+    .lyric-line {
+        color: white;
+        text-align: center;
+        padding: 4px 0;
+        font-size: 1rem;
+        line-height: 1.5;
+        opacity: 0.6;
+        transition: all 0.2s ease;
+    }
+
+    .lyric-line.active {
+        opacity: 1;
+        font-size: 1.1rem;
+        font-weight: bold;
+        transform: scale(1.05);
+    }
+
+    /* 滚动条美化（可选） */
+    .lyrics-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .lyrics-container::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 3px;
+    }
+}
+
+/* 桌面端保持歌词始终显示 */
+@media (min-width: 769px) {
+    .lyrics-container {
+        display: block !important;
+        overflow-y: auto;
+        margin-top: 24px;
+    }
+}
+
+.lyrics-word.active {
+    font-weight: bold;
+    opacity: 1;
+    transform: scale(1.05);
+}
