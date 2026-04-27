@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索 - NekoNyanpasuMusic</title>
+    <link rel="icon" href="favicon.ico">
+    <!-- 引入MDUI CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css">
+    <link rel="stylesheet" href="css/search.css">
+</head>
+<body class="mdui-theme-primary-indigo mdui-theme-accent-pink">
+    <div class="mdui-progress" id="load" style="display: none;"><div class="mdui-progress-indeterminate"></div></div>
+    <div class="mdui-container" style="margin: 10px 0px 30px;">
+        <div class="mdui-textfield mdui-textfield-expandable mdui-float-right" style="width: 60%;">
+            <button class="mdui-textfield-icon mdui-btn mdui-btn-icon" id="searchIcon">
+                <i class="mdui-icon material-icons">search</i>
+            </button>
+            <input class="mdui-textfield-input" type="text" id="searchInput" placeholder="搜索音乐、歌手、专辑..."/>
+        </div>
+    </div>
+
+    <div id="searchSuggestions" class="mdui-shadow-2" style="
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        background: var(--mdui-color-surface, #fff);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 4px;
+    "></div>
+
+    <div class="search-container mdui-container">
+        <div class="hot-search">
+            <div class="hot-search-title">热门搜索</div>
+            <div class="hot-search-tags" id="hotSearchTags"></div>
+        </div>
+
+        <div class="mdui-tab mdui-tab-scrollable" mdui-tab id="searchTypeTabs">
+            <a href="#song" class="mdui-tab mdui-ripple active" data-type="1">单曲</a>
+            <a href="#album" class="mdui-tab mdui-ripple" data-type="10">专辑</a>
+            <a href="#artist" class="mdui-tab mdui-ripple" data-type="100">歌手</a>
+            <a href="#playlist" class="mdui-tab mdui-ripple" data-type="1000">歌单</a>
+            <a href="#user" class="mdui-tab mdui-ripple" data-type="1002">用户</a>
+            <a href="#mv" class="mdui-tab mdui-ripple" data-type="1004">MV</a>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+    <script src="themeManager.js"></script>
+    <script src="js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专辑 - NekoNyanpasuMusic</title>
+    <link rel="icon" href="favicon.ico">
+    <!-- 引入MDUI CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css">
+    <style>
+        .album-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .album-header {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .album-cover {
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            margin-right: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .album-info {
+            flex-grow: 1;
+            min-width: 250px;
+        }
+        .album-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .album-artist {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .album-artist a {
+            color: #1677ff;
+            text-decoration: none;
+        }
+        .album-artist a:hover {
+            text-decoration: underline;
+        }
+        .album-meta {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+        .album-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+        }
+        .stat-icon {
+            margin-right: 5px;
+            color: #888;
+        }
+        .stat-value {
+            font-size: 14px;
+            color: #333;
+        }
+        .album-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .song-list {
+            margin-bottom: 30px;
+        }
+        .song-list-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .comment-section {
+            margin-top: 30px;
+        }
+        .comment-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .comment-count {
+            font-size: 14px;
+            color: #888;
+            font-weight: normal;
+        }
+        .comment-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .comment-user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .comment-user-name {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .comment-time {
+            font-size: 12px;
+            color: #888;
+        }
+        .comment-content {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #888;
+        }
+        .comment-like {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        .comment-like-icon {
+            margin-right: 5px;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px 0;
+            color: #999;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .album-cover {
+                width: 150px;
+                height: 150px;
+            }
+            .album-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="mdui-theme-primary-indigo mdui-theme-accent-pink">
+    <div class="mdui-appbar mdui-shadow-0 mdui-color-primary">
+        <div class="mdui-toolbar mdui-container">
+            <a href="index.html" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">home</i></a>
+            <div class="mdui-toolbar-spacer"></div>
+            <div class="mdui-textfield mdui-textfield-expandable mdui-float-right" style="width: 60%;">
+                <button class="mdui-textfield-icon mdui-btn mdui-btn-icon" id="searchIcon">
+                    <i class="mdui-icon material-icons">search</i>
+                </button>
+                <input class="mdui-textfield-input" type="text" id="searchInput" placeholder="搜索音乐、歌手、专辑..."/>
+                <button class="mdui-textfield-close mdui-btn mdui-btn-icon">
+                    <i class="mdui-icon material-icons">close</i>
+                </button>
+                <div id="searchSuggestions" class="search-suggestions mdui-shadow-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="album-container mdui-container">
+        <div class="album-header">
+            <img id="albumCover" class="album-cover" src="" alt="专辑封面">
+            <div class="album-info">
+                <h1 id="albumTitle" class="album-title">加载中...</h1>
+                <div class="album-artist">
+                    歌手: <a id="artistLink" href="#">加载中...</a>
+                </div>
+                <div id="albumMeta" class="album-meta">
+                    加载中...
+                </div>
+                <div class="album-stats">
+                    <div class="stat-item">
+                        <i class="mdui-icon material-icons stat-icon">favorite</i>
+                        <span id="likeCount" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="mdui-icon material-icons stat-icon">comment</i>
+                        <span id="commentCount" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="mdui-icon material-icons stat-icon">share</i>
+                        <span id="shareCount" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="mdui-icon material-icons stat-icon">playlist_add</i>
+                        <span id="subCount" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="album-actions">
+                    <button id="playAllBtn" class="mdui-btn mdui-btn-raised mdui-color-primary mdui-ripple">
+                        <i class="mdui-icon material-icons">play_circle_filled</i> 播放全部
+                    </button>
+                    <button id="collectBtn" class="mdui-btn mdui-btn-outlined mdui-ripple">
+                        <i class="mdui-icon material-icons">favorite_border</i> 收藏
+                    </button>
+                    <button id="shareBtn" class="mdui-btn mdui-btn-outlined mdui-ripple">
+                        <i class="mdui-icon material-icons">share</i> 分享
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="song-list">
+            <h2 class="song-list-header">歌曲列表</h2>
+            <div id="songListContainer" class="mdui-list">
+                <div class="loading">
+                    <div class="mdui-spinner mdui-spinner-colorful"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comment-section">
+            <h2 class="comment-header">
+                评论
+                <span id="commentCountText" class="comment-count">(0)</span>
+            </h2>
+            <div id="commentListContainer">
+                <div class="loading">
+                    <div class="mdui-spinner mdui-spinner-colorful"></div>
+                </div>
+            </div>
+            <div class="mdui-center mdui-m-t-2">
+                <button id="loadMoreCommentsBtn" class="mdui-btn mdui-btn-outlined mdui-ripple">加载更多</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+    <script src="themeManager.js"></script>
+    <script src="js/album.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.ThemeManager && ThemeManager.initTheme) {
+                ThemeManager.initTheme();
+            }
+        });
+    </script>
+</body>
+</html>

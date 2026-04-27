@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户 - NekoNyanpasuMusic</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css">
+    <style>
+        .user-header {
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 2rem 0;
+            position: relative;
+        }
+        .user-avatar-container {
+            position: relative;
+        }
+        .user-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        .user-vip-badge {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .user-stats {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .user-stat-item {
+            display: inline-block;
+            margin: 0 1rem;
+        }
+        .user-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .user-stat-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .tab-content {
+            padding: 1rem;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .playlist-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .playlist-cover {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+        }
+        .user-card {
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        .user-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .event-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .event-time {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        .event-content {
+            margin-top: 0.5rem;
+        }
+        .song-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body class="mdui-theme-primary-indigo mdui-theme-accent-pink">
+    <div class="mdui-appbar mdui-shadow-0 mdui-appbar-fixed">
+        <div class="mdui-toolbar mdui-container">
+            <a href="javascript:void(0);" onclick="window.history.go(-1);" class="mdui-btn mdui-btn-icon mdui-text-color-white-text"><i class="mdui-icon material-icons">arrow_back</i></a>
+            <div class="mdui-toolbar-spacer"></div>
+            <a href="search.html" class="mdui-btn mdui-btn-icon mdui-text-color-white-text"><i class="mdui-icon material-icons">search</i></a>
+        </div>
+    </div>
+
+    <div class="user-header" id="userHeader">
+        <div class="mdui-container">
+            <div class="mdui-row">
+                <div class="mdui-col-xs-4 mdui-col-sm-3 user-avatar-container">
+                    <img id="userAvatar" src="" alt="用户头像" class="user-avatar">
+                </div>
+                <div class="mdui-col-xs-8 mdui-col-sm-9">
+                    <h1 class="mdui-text-display-1" id="userNickname"><span id="nicknameText"></span><img id="vipBadge" class="user-vip-badge" src="https://p6.music.126.net/obj/wonDlsKUwrLClGjCm8Kx/32582187194/7a26/f253/f690/47da2b91bced041709bbcdb68cd0867f.png" style="height: 24px;width: 72px;"></h1>
+                    <p class="mdui-text-subtitle-1" id="userSignature"></p>
+                    <div class="mdui-typo" id="userInfo"></div>
+                </div>
+            </div>
+            <div class="user-stats">
+                <div class="user-stat-item">
+                    <div class="user-stat-value" id="followedsCount"></div>
+                    <div class="user-stat-label">粉丝</div>
+                </div>
+                <div class="user-stat-item">
+                    <div class="user-stat-value" id="followsCount"></div>
+                    <div class="user-stat-label">关注</div>
+                </div>
+                <div class="user-stat-item">
+                    <div class="user-stat-value" id="playlistCount"></div>
+                    <div class="user-stat-label">歌单</div>
+                </div>
+                <div class="user-stat-item">
+                    <div class="user-stat-value" id="listenSongsCount"></div>
+                    <div class="user-stat-label">听歌数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mdui-container" style="margin-top: 2rem;">
+        <div class="mdui-tab" mdui-tab id="userTabs">
+            <a href="#detail" class="mdui-ripple active">详情</a>
+            <a href="#playlist" class="mdui-ripple">歌单</a>
+            <a href="#follows" class="mdui-ripple">关注</a>
+            <a href="#followeds" class="mdui-ripple">粉丝</a>
+            <a href="#events" class="mdui-ripple">动态</a>
+        </div>
+
+        <div class="tab-content">
+            <div id="detail" class="content-section active">
+                <div class="mdui-card mdui-shadow-0">
+                    <div class="mdui-card-content">
+                        <h2 class="mdui-text-title">个人资料</h2>
+                        <div class="mdui-row mdui-m-t-2">
+                            <div class="mdui-col-xs-4 mdui-text-right">
+                                <p class="mdui-text-color-gray-600">等级</p>
+                            </div>
+                            <div class="mdui-col-xs-8" id="userLevel"></div>
+                        </div>
+                        <div class="mdui-row mdui-m-t-2">
+                            <div class="mdui-col-xs-4 mdui-text-right">
+                                <p class="mdui-text-color-gray-600">注册时间</p>
+                            </div>
+                            <div class="mdui-col-xs-8" id="registerTime"></div>
+                        </div>
+                        <div class="mdui-row mdui-m-t-2">
+                            <div class="mdui-col-xs-4 mdui-text-right">
+                                <p class="mdui-text-color-gray-600">地区</p>
+                            </div>
+                            <div class="mdui-col-xs-8" id="userLocation"></div>
+                        </div>
+                        <div class="mdui-row mdui-m-t-2">
+                            <div class="mdui-col-xs-4 mdui-text-right">
+                                <p class="mdui-text-color-gray-600">个人介绍</p>
+                            </div>
+                            <div class="mdui-col-xs-8" id="userDescription"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="mdui-card mdui-shadow-0 mdui-m-t-4">
+                    <div class="mdui-card-content">
+                        <h2 class="mdui-text-title">最近播放</h2>
+                        <div id="recentSongs"></div>
+                    </div>
+                </div> -->
+            </div>
+
+            <div id="playlist" class="content-section">
+                <div id="userPlaylists"></div>
+            </div>
+
+            <div id="follows" class="content-section">
+                <div id="userFollows"></div>
+            </div>
+
+            <div id="followeds" class="content-section">
+                <div id="userFolloweds"></div>
+            </div>
+
+            <div id="events" class="content-section">
+                <div id="userEvents"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="themeManager.js"></script>
+    <script src="js/userpage.js"></script>
+    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+</body>
+</html>

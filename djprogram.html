@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电台详情 - NekoNyanpasuMusic</title>
+    <link rel="icon" href="favicon.ico">
+    <!-- 引入MDUI CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css">
+    <style>
+        .header-bg {
+            background: linear-gradient(135deg, #3f51b5, #5c6bc0);
+            color: white;
+        }
+        .program-item {
+            transition: all 0.3s;
+        }
+        .program-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .mdui-list-item-avatar {
+            width: 56px;
+            height: 56px;
+        }
+    </style>
+</head>
+<body class="mdui-appbar-with-tab mdui-theme-primary-indigo mdui-theme-accent-pink">
+    <!-- 顶部导航栏 -->
+    <div class="mdui-appbar header-bg">
+        <div class="mdui-toolbar mdui-container">
+            <a href="index.html" class="mdui-btn mdui-btn-icon mdui-text-white"><i class="mdui-icon material-icons">arrow_back</i></a>
+            <div class="mdui-toolbar-spacer"></div>
+            <a href="settings.html" class="mdui-btn mdui-btn-icon mdui-text-white"><i class="mdui-icon material-icons">settings</i></a>
+            <a href="#" class="mdui-btn mdui-btn-icon mdui-text-white"><i class="mdui-icon material-icons">share</i></a>
+            <a href="#" class="mdui-btn mdui-btn-icon mdui-text-white"><i class="mdui-icon material-icons">more_vert</i></a>
+        </div>
+    </div>
+
+    <div class="mdui-container mdui-m-t-4">
+        <!-- 电台详情头部 -->
+        <div id="djHeader" class="mdui-row mdui-m-b-6">
+            <div class="mdui-col-xs-4 mdui-col-sm-3 mdui-col-md-2">
+                <img id="djCover" src="" alt="电台封面" class="mdui-img-rounded" style="width: 100%;">
+            </div>
+            <div class="mdui-col-xs-8 mdui-col-sm-9 mdui-col-md-10 mdui-p-l-4">
+                <h1 id="djName" class="mdui-text-display-1 mdui-m-b-1"></h1>
+                <div class="mdui-row mdui-m-b-2">
+                    <div class="mdui-col-xs-4">
+                        <p class="mdui-text-sm mdui-text-color-grey-600">订阅量</p>
+                        <p id="djSubCount" class="mdui-text-title"></p>
+                    </div>
+                    <div class="mdui-col-xs-4">
+                        <p class="mdui-text-sm mdui-text-color-grey-600">节目数</p>
+                        <p id="djProgramCount" class="mdui-text-title"></p>
+                    </div>
+                    <div class="mdui-col-xs-4">
+                        <p class="mdui-text-sm mdui-text-color-grey-600">分类</p>
+                        <p id="djCategory" class="mdui-text-title"></p>
+                    </div>
+                </div>
+                <div class="mdui-row">
+                    <button id="subscribeBtn" class="mdui-btn mdui-btn-raised mdui-color-primary mdui-m-r-2">订阅</button>
+                    <button id="playBtn" class="mdui-btn mdui-btn-raised mdui-color-pink-accent"><i class="mdui-icon material-icons mdui-m-r-1">play_arrow</i> 播放</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 电台描述 -->
+        <div class="mdui-card mdui-m-b-6">
+            <div class="mdui-card-content">
+                <h2 class="mdui-text-title mdui-m-b-2"><i class="mdui-icon material-icons mdui-m-r-1">info</i> 电台介绍</h2>
+                <p id="djDescription" class="mdui-text-gray-600"></p>
+            </div>
+        </div>
+
+        <!-- 节目列表 -->
+        <div class="mdui-card mdui-m-b-6">
+            <div class="mdui-card-header">
+                <div class="mdui-card-header-title">节目列表</div>
+                <div class="mdui-card-header-subtitle">共 <span id="totalPrograms"></span> 期</div>
+            </div>
+            <div class="mdui-card-content">
+                <ul id="programList" class="mdui-list mdui-list-dense"></ul>
+            </div>
+            <!-- 加载更多 -->
+            <div class="mdui-card-actions mdui-justify-center">
+                <button id="loadMoreBtn" class="mdui-btn mdui-btn-outline mdui-color-primary mdui-m-b-2">加载更多</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 从URL获取rid参数
+        function getUrlParams() {
+            let params = {};
+            window.location.search.substring(1).split('&').forEach(item => {
+                let [key, value] = item.split('=');
+                params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+
+        // 初始化ThemeManager配置
+        function initThemeManager() {
+            // 等待主题JS加载完成
+            if (window.ThemeManager) {
+                // 从隐藏input获取API基础URL
+                let apiBaseUrl = ThemeManager.getApiBaseUrl() || 'https://163api.qijieya.cn/';
+                // 初始化主题
+                ThemeManager.initTheme();
+            } else {
+                // 如果主题JS未加载，100ms后重试
+                setTimeout(initThemeManager, 100);
+            }
+        }
+
+        // 带Cookie的Fetch请求
+        async function fetchWithCookie(url, options = {}) {
+            let defaultOptions = {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            };
+            let mergedOptions = { ...defaultOptions, ...options };
+            return fetch(url, mergedOptions);
+        }
+
+        // 格式化数字（如1.5万）
+        function formatNumber(num) {
+            if (num >= 10000) {
+                return (num / 10000).toFixed(1) + '万';
+            }
+            return num;
+        }
+
+        // 格式化时间（毫秒转分:秒）
+        function formatDuration(durationMs) {
+            let seconds = Math.floor(durationMs / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+
+        // 获取电台详情
+        async function getDjDetail(rid) {
+            try {
+                // 确保ThemeManager已初始化
+                if (!window.ThemeManager) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    if (!window.ThemeManager) {
+                        throw new Error('ThemeManager未初始化');
+                    }
+                }
+                let url = `${ThemeManager.getApiBaseUrl()}dj/program/detail?id=${rid}`;
+                let response = await fetchWithCookie(url);
+                let data = await response.json();
+                if (data.code === 200) {
+                    return data.data;
+                } else {
+                    throw new Error(`获取电台详情失败: ${data.msg || '未知错误'}`);
+                }
+            } catch (error) {
+                console.error('获取电台详情错误:', error);
+                if (window.mdui) {
+                    mdui.snackbar({ message: '获取电台详情失败', position: 'bottom' });
+                }
+                return null;
+            }
+        }
+
+        // 获取电台节目列表
+        async function getDjPrograms(rid, limit = 30, offset = 0) {
+            try {
+                // 确保ThemeManager已初始化
+                if (!window.ThemeManager) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    if (!window.ThemeManager) {
+                        throw new Error('ThemeManager未初始化');
+                    }
+                }
+                let url = `${ThemeManager.getApiBaseUrl()}/dj/program?rid=${rid}&limit=${limit}&offset=${offset}`;
+                let response = await fetchWithCookie(url);
+                let data = await response.json();
+                if (data.code === 200) {
+                    return data.programs;
+                } else {
+                    throw new Error(`获取电台节目失败: ${data.msg || '未知错误'}`);
+                }
+            } catch (error) {
+                console.error('获取电台节目错误:', error);
+                if (window.mdui) {
+                    mdui.snackbar({ message: '获取电台节目失败', position: 'bottom' });
+                }
+                return [];
+            }
+        }
+
+        // 渲染电台详情
+        function renderDjDetail(djData) {
+            // 动态设置页面标题
+            document.title = `${djData.name} - NekoNyanpasuMusic`;
+            document.getElementById('djName').textContent = djData.name;
+            document.getElementById('djCover').src = djData.picUrl;
+            document.getElementById('djSubCount').textContent = formatNumber(djData.subCount);
+            document.getElementById('djProgramCount').textContent = djData.programCount;
+            document.getElementById('djCategory').textContent = `${djData.category} · ${djData.secondCategory}`;
+            document.getElementById('djDescription').textContent = djData.desc || '暂无描述';
+            document.getElementById('totalPrograms').textContent = djData.programCount;
+
+            // 设置订阅按钮状态
+            let subscribeBtn = document.getElementById('subscribeBtn');
+            if (djData.subed) {
+                subscribeBtn.textContent = '已订阅';
+                subscribeBtn.classList.remove('mdui-color-primary');
+                subscribeBtn.classList.add('mdui-color-grey-400');
+            } else {
+                subscribeBtn.textContent = '订阅';
+                subscribeBtn.classList.remove('mdui-color-grey-400');
+                subscribeBtn.classList.add('mdui-color-primary');
+            }
+
+            // 播放按钮点击事件
+            document.getElementById('playBtn').addEventListener('click', function() {
+                if (djData.lastProgramId) {
+                    window.location.href = `play.html?djId=${djData.lastProgramId}`;
+                } else {
+                    mdui.snackbar({ message: '暂无节目可播放', position: 'bottom' });
+                }
+            });
+
+            // 订阅按钮点击事件
+            subscribeBtn.addEventListener('click', function() {
+                // 这里可以实现订阅功能
+                mdui.snackbar({ message: djData.subed ? '已取消订阅' : '订阅成功', position: 'bottom' });
+                djData.subed = !djData.subed;
+                renderDjDetail(djData);
+            });
+        }
+
+        // 渲染节目列表
+        function renderProgramList(programs) {
+            let programList = document.getElementById('programList');
+            programs.forEach(program => {
+                let li = document.createElement('li');
+                li.className = 'mdui-list-item mdui-ripple program-item';
+                li.innerHTML = `
+                    <div class="mdui-list-item-avatar">
+                        <img src="${program.coverUrl}" alt="节目封面" class="mdui-img-circle">
+                    </div>
+                    <div class="mdui-list-item-content">
+                        <div class="mdui-list-item-title mdui-text-truncate">${program.name}</div>
+                        <div class="mdui-list-item-text mdui-text-color-grey-600">
+                            ${program.dj.nickname} · ${formatDuration(program.duration)}
+                        </div>
+                    </div>
+                    <div class="mdui-list-item-icon mdui-text-color-grey-400">
+                        <i class="mdui-icon material-icons">play_arrow</i>
+                    </div>
+                `;
+                li.addEventListener('click', function() {
+                    window.location.href = `play.html?djId=${program.id}`;
+                });
+                programList.appendChild(li);
+            });
+        }
+
+        // 初始化页面
+        async function init() {
+            // 等待mdui加载完成
+            if (!window.mdui) {
+                await new Promise(resolve => {
+                    let checkMdui = () => {
+                        if (window.mdui) {
+                            resolve();
+                        } else {
+                            setTimeout(checkMdui, 50);
+                        }
+                    };
+                    checkMdui();
+                });
+            }
+
+            let params = getUrlParams();
+            let rid = params.rid;
+            if (!rid) {
+                mdui.snackbar({ message: '缺少电台ID参数', position: 'bottom' });
+                return;
+            }
+
+            // 获取电台详情
+            let djDetail = await getDjDetail(rid);
+            if (djDetail) {
+                renderDjDetail(djDetail);
+
+                // 获取并渲染节目列表
+                let programs = await getDjPrograms(rid);
+                renderProgramList(programs);
+
+                // 加载更多按钮事件
+                let offset = 30;
+                document.getElementById('loadMoreBtn').addEventListener('click', async function() {
+                    this.innerHTML = '<div class="mdui-spinner mdui-spinner-color-primary mdui-spinner-sm"></div>';
+                    let morePrograms = await getDjPrograms(rid, 30, offset);
+                    if (morePrograms.length > 0) {
+                        renderProgramList(morePrograms);
+                        offset += 30;
+                    } else {
+                        mdui.snackbar({ message: '没有更多节目了', position: 'bottom' });
+                        this.disabled = true;
+                        this.classList.add('mdui-color-grey-400');
+                    }
+                    this.innerHTML = '加载更多';
+                });
+            }
+
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化主题管理器
+            initThemeManager();
+            // 初始化页面
+            init();
+        });
+    </script>
+    <!-- 引入主题JS -->
+    <!-- 引入MDUI JS -->
+    <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+    <script src="themeManager.js"></script>
+</body>
+</html>

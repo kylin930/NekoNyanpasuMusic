@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NekoNyanpasuMusic</title>
+    <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css"/>
+    <link rel="stylesheet" href="css/play.css" />
+</head>
+<body>
+<div class="app-container">
+    <div class="mdui-appbar mdui-shadow-0">
+        <div class="mdui-toolbar">
+            <a onclick="window.history.go(-1);" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">arrow_back</i></a>
+            <a class="mdui-typo-headline">NekoNyanpasuMusic</a>
+            <div class="mdui-toolbar-spacer"></div>
+            <a href="search.html" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>
+        </div>
+    </div>
+    <div id="background-overlay"></div>
+
+    <main class="main-content">
+        <div class="player-sidebar">
+            <div class="album-art-container">
+                <img id="album-cover" src="" alt="专辑封面" class="album-art" />
+            </div>
+            <div class="player-controls">
+                <div class="control-row">
+                    <button id="shuffle-btn" class="control-btn" aria-label="随机播放">
+                        <i class="mdui-icon material-icons">shuffle</i>
+                    </button>
+                    <button id="prev-btn" class="control-btn" disabled aria-label="上一首">
+                        <i class="mdui-icon material-icons">skip_previous</i>
+                    </button>
+                    <button id="play-pause-btn" class="control-btn play-pause-btn" aria-label="播放/暂停">
+                        <i class="mdui-icon material-icons">play_arrow</i>
+                    </button>
+                    <button id="next-btn" class="control-btn" disabled aria-label="下一首">
+                        <i class="mdui-icon material-icons">skip_next</i>
+                    </button>
+                    <button id="repeat-btn" class="control-btn active" aria-label="循环模式">
+                        <i class="mdui-icon material-icons">repeat</i>
+                    </button>
+                </div>
+                <div class="progress-section">
+                    <div class="time-info">
+                        <span id="current-time">00:00</span>
+                        <span id="total-time">00:00</span>
+                    </div>
+                    <div id="progress-bar" class="progress-bar">
+                        <div id="progress-filled" class="progress-filled"></div>
+                    </div>
+                </div>
+                <div class="volume-control">
+                    <button id="volume-btn" class="control-btn" aria-label="音量">
+                        <i class="mdui-icon material-icons">volume_up</i>
+                    </button>
+                    <input id="volume-slider" type="range" min="0" max="100" value="80" class="volume-slider" />
+                </div>
+
+            </div>
+        </div>
+
+        <div class="lyrics-section">
+            <div class="song-info">
+                <h2 id="song-name" class="song-title">歌曲名</h2>
+                <p id="song-artist" class="song-artist">艺术家</p>
+            </div>
+            <div id="lyrics-container" class="lyrics-container">
+                <div id="lyrics-content" class="lyrics-content"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <button id="playlist-btn" class="footer-btn mdui-ripple">
+            <i class="mdui-icon material-icons">queue_music</i>
+        </button>
+        <button id="comment-btn" class="footer-btn mdui-ripple">
+            <i class="mdui-icon material-icons">comment</i>
+        </button>
+        <button id="bass-boost-btn" class="footer-btn mdui-ripple">
+            <i class="mdui-icon material-icons">graphic_eq</i>
+        </button>
+        <div class="mdui-row" style="align-items: center; margin: 8px 0;">
+            <div class="mdui-col-xs-2">
+                <button id="likeBtn" class="mdui-btn mdui-btn-icon mdui-ripple">
+                <i class="mdui-icon material-icons">favorite_border</i>
+                </button>
+            </div>
+            <div class="mdui-col-xs-10">
+                <span id="likeCount" class="mdui-text-color-white">2778</span>
+            </div>
+        </div>
+    </footer>
+
+    <audio id="audio-player" crossorigin="anonymous"></audio>
+
+    <div class="mdui-dialog" id="playlist-dialog">
+        <div class="mdui-dialog-title">
+            <span>播放列表</span>
+        </div>
+        <div class="mdui-dialog-content" id="playlist-content">
+            <div class="mdui-spinner mdui-spinner-colorful mdui-center"></div>
+        </div>
+        <div class="mdui-dialog-actions">
+            <button class="mdui-btn mdui-ripple" mdui-dialog-close>关闭</button>
+        </div>
+    </div>
+
+    <div id="comment-dialog" class="mdui-dialog" style="width: 90%; max-width: 600px;">
+      <div class="mdui-dialog-title">歌曲评论</div>
+      <div class="mdui-dialog-content" style="max-height: 85vh; overflow-y: auto;">
+        <div id="comment-list"></div>
+        <div id="loading-indicator" class="mdui-spinner mdui-spinner-color-pink mdui-center" style="display: none; margin: 20px 0;"><div class="mdui-spinner-layer "><div class="mdui-spinner-circle-clipper mdui-spinner-left"><div class="mdui-spinner-circle"></div></div><div class="mdui-spinner-gap-patch"><div class="mdui-spinner-circle"></div></div><div class="mdui-spinner-circle-clipper mdui-spinner-right"><div class="mdui-spinner-circle"></div></div></div></div>
+      </div>
+    </div>
+
+    <div id="floor-comment-dialog" class="mdui-dialog" style="width: 90%; max-width: 600px;">
+      <div class="mdui-dialog-title">楼层评论</div>
+      <div class="mdui-dialog-content" style="max-height: 85vh; overflow-y: auto;">
+        <div id="floor-comment-list"></div>
+        <div id="floor-loading-indicator" class="mdui-spinner mdui-spinner-color-pink mdui-center" style="display: none; margin: 20px 0;"><div class="mdui-spinner-layer "><div class="mdui-spinner-circle-clipper mdui-spinner-left"><div class="mdui-spinner-circle"></div></div><div class="mdui-spinner-gap-patch"><div class="mdui-spinner-circle"></div></div><div class="mdui-spinner-circle-clipper mdui-spinner-right"><div class="mdui-spinner-circle"></div></div></div></div>
+      </div>
+      <div class="mdui-dialog-actions">
+        <button class="mdui-btn mdui-ripple" id="back">返回主层评论</button>
+        <button class="mdui-btn mdui-ripple" mdui-dialog-close>关闭</button>
+      </div>
+    </div>
+
+<script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+<script src="Tone.min.js"></script>
+<script src="themeManager.js"></script>
+<script src="js/play.js"></script>
+<script src="js/comment.js"></script>
+</body>
+</html>
