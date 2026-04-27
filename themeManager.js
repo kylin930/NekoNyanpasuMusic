@@ -5,17 +5,18 @@ function fetchWithCookie(url, options = {}) {
     if (cookie && !url.includes("https://api.qijieya.cn")) {
         headers['X-Cookie'] = cookie; // 自定义头，浏览器不限制
     }
+    let workerUrl;
 
-    // const a = url.includes("https://163api.ciallo.uk");
-    // if (a) {
-    //     workerUrl = url.replace('https://163api.ciallo.uk', 'https://163proxy.930390.xyz');
-    // } else if (url.includes("https://api.qijieya.cn")) {
-    //     workerUrl = url;
-    // } else {
-    //     workerUrl = "https://163proxy.930390.xyz"+url;
-    // }
+    const a = url.includes("https://163api.ciallo.uk");
+    if (a) {
+        workerUrl = url;
+    } else if (url.includes("https://api.qijieya.cn")) {
+        workerUrl = url;
+    } else {
+        workerUrl = "https://163api.ciallo.uk"+url;
+    }
 
-    return fetch("https://163api.ciallo.uk"+url, { ...options, headers });
+    return fetch(workerUrl, { ...options, headers });
 }
 
 // 主题管理模块
