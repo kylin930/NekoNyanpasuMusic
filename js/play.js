@@ -31,7 +31,7 @@ function getSongDetail(id) {
 
 // 获取歌单所有歌曲
 function getPlaylistTracks(id) {
-    return fetch(`https://163api.ciallo.uk/playlist/track/all?id=${id}`)
+    return fetch(`https://api.qijieya.cn/meting/?type=playlist&id=${id}`)
     .then(response => response.json())
     .then(data => data);
 }
