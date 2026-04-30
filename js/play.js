@@ -128,11 +128,10 @@ async function getVipSongUrl(songId) {
     }
 }
 
-// 获取歌词
 function getLyrics(id) {
-    return fetch(`https://163api.ciallo.uk/lyric?id=${id}`)
-    .then(response => response.json())
-    .then(data => data);
+    return fetch(`https://api.qijieya.cn/meting/?server=netease&type=lrc&id=${id}`)
+    .then(response => response.text()) // 接收纯文本并处理换行
+    .then(text => text);
 }
 
 // 获取逐字歌词
