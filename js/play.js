@@ -638,11 +638,20 @@ class NekoPlayer {
                 this.setupAudioGraph();
             }
 
+            try {
+                const lyricsText = await getLyrics(songId);
+                // 新 API 已经是纯文本，所以直接传给 parseLyrics，翻译为空字符串即可
+                this.lyrics = parseLyrics(lyricsText || '', '');
+            } catch (e) {
+                console.error('获取歌词失败:', e);
+                this.lyrics = [];
+            }
+            
             // Load Lyrics
-            const lyricsData = await getLyrics(songId);
-            const original = lyricsData.lrc?.lyric || '';
-            const translate = lyricsData.tlyric?.lyric || '';
-            this.lyrics = parseLyrics(original, translate);
+            // const lyricsData = await getLyrics(songId);
+            // const original = lyricsData.lrc?.lyric || '';
+            // const translate = lyricsData.tlyric?.lyric || '';
+            // this.lyrics = parseLyrics(original, translate);
 
             // 尝试加载逐字歌词
             try {
