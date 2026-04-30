@@ -815,10 +815,20 @@ class NekoPlayer {
     async loadPlaylist(playlistId) {
         try {
             const data = await getPlaylistTracks(playlistId);
-            if (!data.songs || data.songs.length === 0) throw new Error('Playlist is empty');
-            this.playlist = data.songs;
+            // 新API直接返回数组
+            let songs = Array.isArray(data) ? data : (data.songs || []);
+            if (songs.length === 0) throw new Error('Playlist is empty');
+            
+            // 为新 API 手动补充从 url 提取到的 ID
+            this.playlist = songs.map(song => {
+                if (!song.id && song.url) {
+                    let match = song.url.match(/id=(\d+)/);
+                    if (match) song.id = match[1];
+                }
+                return song;
+            });
+            
             this.updateControls();
-            // Find the current song index if specified in URL
             const params = getUrlParams();
             if (params.songId) {
                 const idx = this.playlist.findIndex(s => s.id.toString() === params.songId);
