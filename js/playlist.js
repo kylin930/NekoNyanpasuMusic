@@ -31,7 +31,7 @@ function getPlaylistDetail(id) {
 
 // 获取歌单所有歌曲
 function getPlaylistTracks(id) {
-    return fetch(`https://163api.ciallo.uk/playlist/track/all?id=${id}`)
+    return fetch(`https://api.qijieya.cn/meting/?type=playlist&id=${id}`)
         .then(response => response.json())
         .then(data => data);
 }
@@ -61,18 +61,34 @@ function renderPlaylistDetail(playlist) {
 // 渲染歌曲列表
 function renderSongList(songs) {
     let songListContainer = document.getElementById('songList');
-    let playlistId = getPlaylistIdFromUrl(); // 获取当前歌单ID
+    let playlistId = getPlaylistIdFromUrl(); 
     let html = '';
+    
     songs.forEach((song, index) => {
-        let artists = song.ar.map(artist => artist.name).join('/');
+        // --- 兼容新旧 API 的解析 ---
+        let name = song.name;
+        // 新API直接是 artist，旧API是 ar 数组
+        let artist = song.artist || (song.ar ? song.ar.map(a => a.name).join('/') : '未知歌手');
+        // 新API是 pic，旧API是 al.picUrl
+        let pic = song.pic || (song.al ? song.al.picUrl : '');
+        // 时长如果没有返回，就默认 00:00，进入播放页会自动获取
+        let duration = song.dt ? formatDuration(song.dt) : '00:00';
+        
+        // 新 API 返回的歌单不带直接的 id 字段，需要从 url 提取
+        let songId = song.id;
+        if (!songId && song.url) {
+            let match = song.url.match(/id=(\d+)/);
+            if (match) songId = match[1];
+        }
+
         html += `
-        <div class="mdui-row song-item" onclick="playSong(${song.id})">
+        <div class="mdui-row song-item" onclick="playSong('${songId}')">
         <div class="mdui-col-xs-1 song-index">${index + 1}</div>
-        <div class="mdui-col-xs-6 song-name"><div class="mdui-list-item-avatar"><img src="${song.al.picUrl}"/></div>${song.name}</div>
-        <div class="mdui-col-xs-2 song-artist">${artists}</div>
-        <div class="mdui-col-xs-1 song-duration">${formatDuration(song.dt)}</div>
+        <div class="mdui-col-xs-6 song-name"><div class="mdui-list-item-avatar"><img src="${pic}"/></div>${name}</div>
+        <div class="mdui-col-xs-2 song-artist">${artist}</div>
+        <div class="mdui-col-xs-1 song-duration">${duration}</div>
         <div class="mdui-col-xs-2 song-actions">
-        <button class="mdui-btn mdui-btn-raised mdui-ripple" onclick="event.stopPropagation(); playIntelligenceMode('${song.id}', '${playlistId}')">心动模式</button>
+        <button class="mdui-btn mdui-btn-raised mdui-ripple" onclick="event.stopPropagation(); playIntelligenceMode('${songId}', '${playlistId}')">心动模式</button>
         </div>
         </div>
         `;
