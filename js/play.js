@@ -589,18 +589,20 @@ class NekoPlayer {
         let html = '';
         this.playlist.forEach((song, index) => {
             const isActive = index === this.currentIndex;
+            // 兼容新旧格式的歌手名解析
+            let artist = song.artist || (song.ar ? song.ar.map(a => a.name).join(' / ') : '未知歌手');
+            
             html += `
             <div class="mdui-list-item ${isActive ? 'mdui-list-item-active' : ''}" data-index="${index}">
             <div class="mdui-list-item-content">
             <div class="mdui-list-item-title">${song.name}</div>
             <div class="mdui-list-item-text mdui-text-color-theme-disabled">
-            ${song.ar.map(a => a.name).join(' / ')}
+            ${artist}
             </div>
             </div>
             </div>
             `;
         });
-
         this.elements.playlistContent.innerHTML = html;
 
         // 为每个列表项绑定点击事件
@@ -1012,25 +1014,29 @@ class NekoPlayer {
     renderSongInfo(song) {
         document.title = `${song.name} - NekoMusic`;
         this.elements.songName.textContent = song.name;
-        this.elements.songArtist.textContent = song.ar.map(a => a.name).join(' / ');
-        this.elements.albumCover.src = `${song.al.picUrl}?param=400x400`;
-        this.elements.totalTime.textContent = formatDuration(song.dt);
+        
+        let artist = song.artist || (song.ar ? song.ar.map(a => a.name).join(' / ') : '未知歌手');
+        this.elements.songArtist.textContent = artist;
+        
+        let pic = song.pic || (song.al ? `${song.al.picUrl}?param=400x400` : '');
+        this.elements.albumCover.src = pic;
+        
+        this.elements.totalTime.textContent = song.dt ? formatDuration(song.dt) : '00:00';
 
         const backgroundOverlay = document.getElementById('background-overlay');
         if (backgroundOverlay) {
-            // 使用 CSS 变量或直接设置 backgroundImage
-            backgroundOverlay.style.backgroundImage = `url(${song.al.picUrl})`;
+            backgroundOverlay.style.backgroundImage = `url(${pic})`;
         }
 
         // 设置 Media Session API 的 Metadata
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: song.name,
-                artist: song.ar.map(a => a.name).join(' / '),
-                album: song.al.name, // 如果有专辑名称的话
+                artist: artist,
+                album: song.al ? song.al.name : '', 
                 artwork: [
-                    { src: `${song.al.picUrl}?param=256x256`, sizes: '256x256', type: 'image/jpeg' },
-                    { src: `${song.al.picUrl}?param=512x512`, sizes: '512x512', type: 'image/jpeg' }
+                    { src: pic, sizes: '256x256', type: 'image/jpeg' },
+                    { src: pic, sizes: '512x512', type: 'image/jpeg' }
                 ]
             });
         }
@@ -1401,6 +1407,10 @@ class NekoPlayer {
 
     onLoadedMetadata() {
         this.updateProgress();
+        // 获取真实的歌曲总时长并替换原本的 00:00
+        if (this.audio.duration && !isNaN(this.audio.duration)) {
+            this.elements.totalTime.textContent = formatDuration(this.audio.duration * 1000);
+        }
     }
 }
 
