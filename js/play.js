@@ -313,8 +313,8 @@ function parseLyricsNew(yrcData) {
     return parsedLyrics;
 }
 
-// 解析歌词
-function parseLyrics(lyrics, translateLyrics = '') {
+// 解析歌词 (兼容行尾带括号翻译的新格式)
+function parseLyrics(lyrics) {
     // 处理空歌词情况
     if (!lyrics || lyrics.trim() === '') {
         return [];
@@ -330,33 +330,6 @@ function parseLyrics(lyrics, translateLyrics = '') {
     // 增强的正则表达式，匹配 [时:分:秒.毫秒]、[分:秒.毫秒] 或 [分:秒] 格式
     let timeRegex = /^\[(?:(\d+):)?(\d+):(\d+)(?:\.(\d{1,3}))?\]/;
 
-    // 解析翻译歌词
-    let translateMap = new Map();
-    if (translateLyrics) {
-        translateLyrics = translateLyrics.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        translateLyrics = translateLyrics.replace(/(\d+):(\d+):(\d+)/g, '$1:$2.$3');
-        let translateLines = translateLyrics.split('\n');
-        translateLines.forEach(line => {
-            let match = timeRegex.exec(line);
-            if (match) {
-                try {
-                    let hours = match[1] ? parseInt(match[1]) : 0;
-                    let minutes = parseInt(match[2]);
-                    let seconds = parseInt(match[3]);
-                    let milliseconds = match[4] ? parseInt(match[4].padEnd(3, '0')) : 0;
-                    let timeMs = hours * 3600 * 1000 + minutes * 60 * 1000 + seconds * 1000 + milliseconds;
-                    let text = line.replace(timeRegex, '').trim();
-
-                    if (text) {
-                        translateMap.set(timeMs, text);
-                    }
-                } catch (error) {
-                    console.error('解析翻译歌词行失败:', line, error);
-                }
-            }
-        });
-    }
-
     lyricLines.forEach((line, index) => {
         try {
             let match = timeRegex.exec(line);
@@ -366,8 +339,19 @@ function parseLyrics(lyrics, translateLyrics = '') {
                 let seconds = parseInt(match[3]);
                 let milliseconds = match[4] ? parseInt(match[4].padEnd(3, '0')) : 0;
                 let timeMs = hours * 3600 * 1000 + minutes * 60 * 1000 + seconds * 1000 + milliseconds;
+                
                 let text = line.replace(timeRegex, '').trim();
-                let translate = translateMap.get(timeMs) || '';
+                let translate = '';
+
+                // 解析行尾的括号翻译，匹配如: 
+                // "Don’t stop it (不要停下来)" 
+                // "Can’t stop it (Yeah) (不能停下来（耶）)"
+                // 允许中英文括号
+                let transMatch = text.match(/^(.*?)\s+[\(（](.*)[\)）]$/);
+                if (transMatch) {
+                    text = transMatch[1].trim(); // 前半部分为原文
+                    translate = transMatch[2].trim(); // 括号内为翻译
+                }
 
                 if (text || translate) {
                     parsedLyrics.push({
@@ -377,9 +361,8 @@ function parseLyrics(lyrics, translateLyrics = '') {
                     });
                 }
             } else {
-                // 处理没有时间戳的特殊行
+                // 处理没有时间戳的特殊行 (比如基础的介绍信息如果换行了)
                 if (parsedLyrics.length > 0) {
-                    // 将文本追加到上一行
                     let lastLyric = parsedLyrics[parsedLyrics.length - 1];
                     lastLyric.text += '\n' + line.trim();
                 }
