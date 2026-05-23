@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure Play - Playlist</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif, -apple-system;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            overflow: hidden;
+        }
+        .player-container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 420px;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            max-height: 780px;
+        }
+        
+        /* 上半部分：当前播放器信息 */
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .cover {
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin: 0 auto 12px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+            background-color: #e0e0e0;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 4px;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .artist {
+            font-size: 13px;
+            color: #757575;
+            margin: 0 0 12px;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* 中间部分：歌词区域 */
+        .lrc-container {
+            height: 110px;
+            width: 100%;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            position: relative;
+            flex-shrink: 0;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+        }
+        .lrc-container::-webkit-scrollbar {
+            display: none;
+        }
+        .lrc-list {
+            list-style: none;
+            padding: 40px 0; 
+            margin: 0;
+            transition: transform 0.3s ease;
+        }
+        .lrc-line {
+            font-size: 13px;
+            color: #9e9e9e;
+            margin: 10px 0;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+            min-height: 18px;
+        }
+        .lrc-line.active {
+            font-size: 15px;
+            color: #6200ee;
+            font-weight: bold;
+        }
+
+        /* 进度条与控制台 */
+        .controls-section {
+            flex-shrink: 0;
+            width: 100%;
+        }
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #6200ee;
+            border-radius: 2px;
+            width: 0%;
+            position: relative;
+        }
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: -3px;
+            width: 10px;
+            height: 10px;
+            background: #6200ee;
+            border-radius: 50%;
+        }
+        .time-container {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #9e9e9e;
+            margin-bottom: 12px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .ctrl-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6200ee;
+            cursor: pointer;
+            margin: 0 16px;
+            outline: none;
+        }
+        .play-btn {
+            background: #6200ee;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(98, 0, 238, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            outline: none;
+            padding-left: 4px;
+        }
+        .play-btn.playing {
+            padding-left: 0;
+        }
+
+        /* 下半部分：歌单列表区域 */
+        .playlist-section {
+            flex: 1;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .playlist-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            margin: 0 0 8px 4px;
+        }
+        .playlist-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .playlist-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .playlist-item:pointer {
+            background: #f9f9f9;
+        }
+        .playlist-item.active {
+            background: #f3e5f5;
+        }
+        .playlist-item.active .item-name {
+            color: #6200ee;
+            font-weight: bold;
+        }
+        .item-name {
+            font-size: 14px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-artist {
+            font-size: 12px;
+            color: #757575;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+
+<div class="player-container">
+    <div class="player-info">
+        <img id="cover" class="cover" src="" alt="封面">
+        <div id="title" class="title">歌单加载中...</div>
+        <div id="artist" class="artist">请稍候</div>
+    </div>
+
+    <div class="lrc-container" id="lrc-container">
+        <ul class="lrc-list" id="lrc-list">
+            <li class="lrc-line">等待播放...</li>
+        </ul>
+    </div>
+
+    <div class="controls-section">
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="time-container">
+            <span id="current-time">00:00</span>
+            <span id="duration">00:00</span>
+        </div>
+        <div class="controls">
+            <button id="prev-btn" class="ctrl-btn">⏮</button>
+            <button id="play-btn" class="play-btn">▶</button>
+            <button id="next-btn" class="ctrl-btn">⏭</button>
+        </div>
+    </div>
+
+    <div class="playlist-section">
+        <div class="playlist-title">歌单列表</div>
+        <ul class="playlist-list" id="playlist-list">
+            </ul>
+    </div>
+</div>
+
+<audio id="audio" preload="auto"></audio>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        // 兼容接收 playlistId 或 id
+        var playlistId = urlParams.get('playlistId') || urlParams.get('id');
+        var server = urlParams.get('server') || 'netease';
+
+        var titleElem = document.getElementById('title');
+        var artistElem = document.getElementById('artist');
+        var coverElem = document.getElementById('cover');
+        var audioElem = document.getElementById('audio');
+        var lrcListElem = document.getElementById('lrc-list');
+        var lrcContainerElem = document.getElementById('lrc-container');
+        var playlistListElem = document.getElementById('playlist-list');
+        
+        var songs = [];         // 存储歌单歌曲数组
+        var currentIndex = 0;   // 当前播放歌曲索引
+        var parsedLrc = [];     // 当前解析后的歌词
+        var currentLrcIndex = -1;
+
+        if (!playlistId) {
+            titleElem.innerText = "未提供歌单ID";
+            artistElem.innerText = "请在URL添加 ?playlistId=xxx 参数";
+            return;
+        }
+
+        var baseUrl = "https://api.qijieya.cn/meting/";
+        
+        // 1. 初始化获取歌单
+        fetch(baseUrl + "?type=playlist&id=" + playlistId + "&server=" + server)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.length > 0) {
+                    songs = data;
+                    renderPlaylistView();
+                    switchTrack(0, false); // 默认载入第一首，不自动触发播放
+                } else {
+                    titleElem.innerText = "歌单为空或解析失败";
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                titleElem.innerText = "无法加载歌单";
+            });
+
+        // 2. 渲染歌单 DOM 结构
+        function renderPlaylistView() {
+            var html = '';
+            for (var i = 0; i < songs.length; i++) {
+                html += '<li class="playlist-item" id="track-' + i + '" data-index="' + i + '">' +
+                            '<span class="item-name">' + (i + 1) + '. ' + songs[i].name + '</span>' +
+                            '<span class="item-artist">' + songs[i].artist + '</span>' +
+                        '</li>';
+            }
+            playlistListElem.innerHTML = html;
+
+            // 绑定列表项点击事件
+            var items = playlistListElem.getElementsByClassName('playlist-item');
+            for (var j = 0; j < items.length; j++) {
+                items[j].addEventListener('click', function() {
+                    var idx = parseInt(this.getAttribute('data-index'), 10);
+                    switchTrack(idx, true);
+                });
+            }
+        }
+
+        // 3. 切换曲目核心逻辑
+        function switchTrack(index, shouldPlay) {
+            if (index < 0 || index >= songs.length) return;
+
+            // 维护列表高亮状态
+            var oldActive = playlistListElem.querySelector('.playlist-item.active');
+            if (oldActive) oldActive.classList.remove('active');
+            
+            var newActive = document.getElementById('track-' + index);
+            if (newActive) {
+                newActive.classList.add('active');
+                // 让当前播放歌曲在歌单列表中平滑滚动可见
+                newActive.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            currentIndex = index;
+            var track = songs[index];
+
+            // 填入基础元数据 (直接使用接口返回的直链)
+            titleElem.innerText = track.name;
+            artistElem.innerText = track.artist;
+            coverElem.src = track.pic;
+            audioElem.src = track.url;
+
+            // 重置歌词状态
+            parsedLrc = [];
+            currentLrcIndex = -1;
+            lrcListElem.innerHTML = '<li class="lrc-line">歌词加载中...</li>';
+            lrcContainerElem.scrollTop = 0;
+
+            // 异步获取歌词
+            if (track.lrc) {
+                fetch(track.lrc)
+                    .then(function(res) { return res.text(); })
+                    .then(function(lrcText) {
+                        parseLrc(lrcText);
+                        renderLrcView();
+                    })
+                    .catch(function() {
+                        lrcListElem.innerHTML = '<li class="lrc-line">无歌词文本</li>';
+                    });
+            }
+
+            if (shouldPlay) {
+                audioElem.play();
+                playBtn.innerText = "⏸";
+                playBtn.classList.add('playing');
+            } else {
+                playBtn.innerText = "▶";
+                playBtn.classList.remove('playing');
+            }
+        }
+
+        // 4. 歌词流解析器
+        function parseLrc(text) {
+            var lines = text.split('\n');
+            var matchReg = /\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/;
+            parsedLrc = [];
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var match = matchReg.exec(line);
+                if (match) {
+                    var min = parseInt(match[1], 10);
+                    var sec = parseInt(match[2], 10);
+                    var ms = match[3] ? parseInt(match[3], 10) : 0;
+                    if (match[3] && match[3].length === 2) { ms *= 10; }
+                    
+                    var time = min * 60 + sec + ms / 1000;
+                    // 清除时间戳标记，完整保留歌词文本与尾随括号的翻译内容
+                    var lrcStr = line.replace(/\[\d{2,}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
+                    if (lrcStr) {
+                        parsedLrc.push({ time: time, text: lrcStr });
+                    }
+                }
+            }
+        }
+
+        function renderLrcView() {
+            if (parsedLrc.length === 0) {
+                lrcListElem.innerHTML = '<li class="lrc-line">纯音乐，请欣赏</li>';
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < parsedLrc.length; i++) {
+                html += '<li class="lrc-line" id="lrc-' + i + '">' + parsedLrc[i].text + '</li>';
+            }
+            lrcListElem.innerHTML = html;
+        }
+
+        // 5. 播放器基础事件控制
+        var playBtn = document.getElementById('play-btn');
+        var prevBtn = document.getElementById('prev-btn');
+        var nextBtn = document.getElementById('next-btn');
+        var progressBar = document.getElementById('progress-bar');
+        var progressContainer = document.getElementById('progress-container');
+        var currentTimeElem = document.getElementById('current-time');
+        var durationElem = document.getElementById('duration');
+
+        playBtn.addEventListener('click', function() {
+            if (songs.length === 0) return;
+            if (audioElem.paused) {
+                audioElem.play();
+                playBtn.innerText = "⏸";
+                playBtn.classList.add('playing');
+            } else {
+                audioElem.pause();
+                playBtn.innerText = "▶";
+                playBtn.classList.remove('playing');
+            }
+        });
+
+        prevBtn.addEventListener('click', function() {
+            if (songs.length === 0) return;
+            var targetIndex = currentIndex - 1 < 0 ? songs.length - 1 : currentIndex - 1;
+            switchTrack(targetIndex, true);
+        });
+
+        nextBtn.addEventListener('click', function() {
+            if (songs.length === 0) return;
+            var targetIndex = (currentIndex + 1) % songs.length;
+            switchTrack(targetIndex, true);
+        });
+
+        // 自动切歌：当前歌曲播放完毕后自动步进到下一首
+        audioElem.addEventListener('ended', function() {
+            if (songs.length === 0) return;
+            var targetIndex = (currentIndex + 1) % songs.length;
+            switchTrack(targetIndex, true);
+        });
+
+        // 进度与歌词高亮刷新
+        audioElem.addEventListener('timeupdate', function() {
+            var current = audioElem.currentTime;
+            var duration = audioElem.duration;
+            
+            if (duration) {
+                var percent = (current / duration) * 100;
+                progressBar.style.width = percent + "%";
+                currentTimeElem.innerText = formatTime(current);
+                durationElem.innerText = formatTime(duration);
+            }
+
+            // 歌词滑动核心逻辑
+            if (parsedLrc.length > 0) {
+                var newIndex = -1;
+                for (var i = 0; i < parsedLrc.length; i++) {
+                    if (current >= parsedLrc[i].time) {
+                        newIndex = i;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (newIndex !== currentLrcIndex && newIndex !== -1) {
+                    if (currentLrcIndex !== -1) {
+                        var oldLi = document.getElementById('lrc-' + currentLrcIndex);
+                        if (oldLi) oldLi.classList.remove('active');
+                    }
+                    var newLi = document.getElementById('lrc-' + newIndex);
+                    if (newLi) {
+                        newLi.classList.add('active');
+                        var scrollPos = newLi.offsetTop - lrcContainerElem.clientHeight / 2 + newLi.clientHeight / 2;
+                        lrcContainerElem.scrollTo({
+                            top: scrollPos,
+                            behavior: 'smooth'
+                        });
+                    }
+                    currentLrcIndex = newIndex;
+                }
+            }
+        });
+
+        // 进度条手动定位
+        progressContainer.addEventListener('click', function(e) {
+            var rect = this.getBoundingClientRect();
+            var clickX = e.clientX - rect.left;
+            var width = rect.width;
+            var duration = audioElem.duration;
+            if (duration) {
+                audioElem.currentTime = (clickX / width) * duration;
+            }
+        });
+
+        function formatTime(seconds) {
+            var min = Math.floor(seconds / 60);
+            var sec = Math.floor(seconds % 60);
+            return (min < 10 ? "0" + min : min) + ":" + (sec < 10 ? "0" + sec : sec);
+        }
+    });
+</script>
+</body>
+</html>
