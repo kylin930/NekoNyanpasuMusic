@@ -3,123 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pure Play - Playlist</title>
+    <title>Pure Play - Split View</title>
     <style>
+        /* 基础样式：取消所有边距，全屏平铺 */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Roboto', sans-serif, -apple-system;
-            background-color: #f5f5f5;
+            background-color: #ffffff;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: row; /* 左右风格 */
             height: 100vh;
-            color: #333;
+            width: 100vw;
             overflow: hidden;
+            color: #202124;
         }
-        .player-container {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            width: 95%;
-            max-width: 420px;
-            padding: 20px;
-            text-align: center;
+
+        /* 左侧面板：播放器核心 */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 32px 48px;
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            height: 95vh;
-            max-height: 780px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0; /* 分割线取代卡片边缘 */
+            min-width: 0; /* 防止 flex 子项溢出 */
         }
-        
-        /* 上半部分：当前播放器信息 */
-        .player-info {
+
+        /* 右侧面板：歌单列表 */
+        .right-panel {
+            width: 350px;
+            flex-shrink: 0;
+            background-color: #f8f9fa;
             display: flex;
             flex-direction: column;
+        }
+
+        /* 顶部封面与歌曲信息 */
+        .header-info {
+            display: flex;
+            flex-direction: row;
             align-items: center;
-            flex-shrink: 0;
+            margin-bottom: 24px;
         }
         .cover {
-            width: 140px;
-            height: 140px;
-            border-radius: 12px;
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
             object-fit: cover;
-            margin: 0 auto 12px;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
             background-color: #e0e0e0;
+            margin-right: 24px;
+            flex-shrink: 0;
+        }
+        .info-text {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         .title {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: bold;
-            margin: 0 0 4px;
-            width: 100%;
+            margin: 0 0 8px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .artist {
-            font-size: 13px;
-            color: #757575;
-            margin: 0 0 12px;
-            width: 100%;
+            font-size: 15px;
+            color: #5f6368;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
-        /* 中间部分：歌词区域 */
+
+        /* 歌词区域 */
         .lrc-container {
-            height: 110px;
+            flex: 1;
             width: 100%;
             overflow-y: auto;
-            margin-bottom: 12px;
+            margin-bottom: 24px;
             position: relative;
-            flex-shrink: 0;
             scrollbar-width: none; 
             -ms-overflow-style: none;
-            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            /* 上下渐变遮罩边缘 */
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
         }
         .lrc-container::-webkit-scrollbar {
             display: none;
         }
         .lrc-list {
             list-style: none;
-            padding: 40px 0; 
+            padding: 20% 0; 
             margin: 0;
-            transition: transform 0.3s ease;
         }
         .lrc-line {
-            font-size: 13px;
-            color: #9e9e9e;
-            margin: 10px 0;
-            line-height: 1.4;
-            transition: all 0.3s ease;
-            min-height: 18px;
+            font-size: 14px;
+            color: #80868b;
+            margin: 14px 0;
+            line-height: 1.5;
+            transition: all 0.2s ease;
         }
         .lrc-line.active {
-            font-size: 15px;
-            color: #6200ee;
+            font-size: 16px;
+            color: #1a73e8;
             font-weight: bold;
         }
 
-        /* 进度条与控制台 */
-        .controls-section {
-            flex-shrink: 0;
+        /* 进度条与控制区域 */
+        .controls-wrapper {
             width: 100%;
+            flex-shrink: 0;
         }
         .progress-container {
             width: 100%;
             height: 4px;
-            background: #e0e0e0;
+            background: #e8eaed;
             border-radius: 2px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             cursor: pointer;
             position: relative;
         }
         .progress-bar {
             height: 100%;
-            background: #6200ee;
+            background: #1a73e8;
             border-radius: 2px;
             width: 0%;
             position: relative;
@@ -127,68 +135,80 @@
         .progress-bar::after {
             content: '';
             position: absolute;
-            right: -5px;
-            top: -3px;
-            width: 10px;
-            height: 10px;
-            background: #6200ee;
+            right: -6px;
+            top: -4px;
+            width: 12px;
+            height: 12px;
+            background: #1a73e8;
             border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .progress-container:hover .progress-bar::after {
+            opacity: 1;
         }
         .time-container {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            color: #9e9e9e;
-            margin-bottom: 12px;
+            font-size: 12px;
+            color: #5f6368;
+            margin-bottom: 16px;
         }
         .controls {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 16px;
         }
         .ctrl-btn {
             background: none;
             border: none;
-            font-size: 20px;
-            color: #6200ee;
+            font-size: 24px;
+            color: #5f6368;
             cursor: pointer;
-            margin: 0 16px;
+            margin: 0 24px;
             outline: none;
+            transition: color 0.2s;
+        }
+        .ctrl-btn:active {
+            color: #1a73e8;
         }
         .play-btn {
-            background: #6200ee;
+            background: #1a73e8;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            font-size: 20px;
+            width: 56px;
+            height: 56px;
+            font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(98, 0, 238, 0.3);
             display: flex;
             justify-content: center;
             align-items: center;
             outline: none;
             padding-left: 4px;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .play-btn:active {
+            transform: scale(0.95);
+            background: #1557b0;
         }
         .play-btn.playing {
             padding-left: 0;
         }
 
-        /* 下半部分：歌单列表区域 */
-        .playlist-section {
-            flex: 1;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-            overflow-y: auto;
-            text-align: left;
-        }
-        .playlist-title {
-            font-size: 14px;
+        /* 歌单列表样式 */
+        .playlist-header {
+            padding: 20px 24px;
+            font-size: 16px;
             font-weight: bold;
-            color: #666;
-            margin: 0 0 8px 4px;
+            color: #202124;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+        .playlist-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
         }
         .playlist-list {
             list-style: none;
@@ -196,48 +216,73 @@
             margin: 0;
         }
         .playlist-item {
-            padding: 10px 12px;
-            border-radius: 8px;
+            padding: 12px 24px;
             cursor: pointer;
-            margin-bottom: 4px;
-            transition: background 0.2s;
             display: flex;
             flex-direction: column;
+            border-left: 4px solid transparent;
+            transition: background 0.2s;
         }
-        .playlist-item:pointer {
-            background: #f9f9f9;
+        .playlist-item:hover {
+            background: #f1f3f4;
         }
         .playlist-item.active {
-            background: #f3e5f5;
+            background: #e8f0fe;
+            border-left-color: #1a73e8;
         }
         .playlist-item.active .item-name {
-            color: #6200ee;
+            color: #1a73e8;
             font-weight: bold;
         }
         .item-name {
             font-size: 14px;
-            color: #333;
+            color: #3c4043;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .item-artist {
             font-size: 12px;
-            color: #757575;
-            margin-top: 2px;
+            color: #80868b;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        /* 响应式：针对过于狭窄的屏幕或竖屏设备，可以强制转为上下（可选） */
+        @media (max-width: 600px) {
+            body {
+                flex-direction: column;
+            }
+            .left-panel {
+                padding: 16px;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            .right-panel {
+                width: 100%;
+                flex: 1;
+            }
+            .header-info {
+                margin-bottom: 16px;
+            }
+            .cover {
+                width: 80px;
+                height: 80px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="player-container">
-    <div class="player-info">
+<div class="left-panel">
+    <div class="header-info">
         <img id="cover" class="cover" src="" alt="封面">
-        <div id="title" class="title">歌单加载中...</div>
-        <div id="artist" class="artist">请稍候</div>
+        <div class="info-text">
+            <div id="title" class="title">歌单加载中...</div>
+            <div id="artist" class="artist">请稍候</div>
+        </div>
     </div>
 
     <div class="lrc-container" id="lrc-container">
@@ -246,7 +291,7 @@
         </ul>
     </div>
 
-    <div class="controls-section">
+    <div class="controls-wrapper">
         <div class="progress-container" id="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
@@ -260,9 +305,11 @@
             <button id="next-btn" class="ctrl-btn">⏭</button>
         </div>
     </div>
+</div>
 
-    <div class="playlist-section">
-        <div class="playlist-title">歌单列表</div>
+<div class="right-panel">
+    <div class="playlist-header" id="playlist-count">播放列表 (0)</div>
+    <div class="playlist-content">
         <ul class="playlist-list" id="playlist-list">
             </ul>
     </div>
@@ -273,7 +320,6 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         var urlParams = new URLSearchParams(window.location.search);
-        // 兼容接收 playlistId 或 id
         var playlistId = urlParams.get('playlistId') || urlParams.get('id');
         var server = urlParams.get('server') || 'netease';
 
@@ -281,52 +327,54 @@
         var artistElem = document.getElementById('artist');
         var coverElem = document.getElementById('cover');
         var audioElem = document.getElementById('audio');
+        
         var lrcListElem = document.getElementById('lrc-list');
         var lrcContainerElem = document.getElementById('lrc-container');
         var playlistListElem = document.getElementById('playlist-list');
+        var playlistCountElem = document.getElementById('playlist-count');
         
-        var songs = [];         // 存储歌单歌曲数组
-        var currentIndex = 0;   // 当前播放歌曲索引
-        var parsedLrc = [];     // 当前解析后的歌词
+        var songs = [];         
+        var currentIndex = 0;   
+        var parsedLrc = [];     
         var currentLrcIndex = -1;
 
         if (!playlistId) {
             titleElem.innerText = "未提供歌单ID";
-            artistElem.innerText = "请在URL添加 ?playlistId=xxx 参数";
+            artistElem.innerText = "请在URL添加 ?playlistId=xxx";
             return;
         }
 
         var baseUrl = "https://api.qijieya.cn/meting/";
         
-        // 1. 初始化获取歌单
+        // 1. 获取歌单数据
         fetch(baseUrl + "?type=playlist&id=" + playlistId + "&server=" + server)
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data && data.length > 0) {
                     songs = data;
+                    playlistCountElem.innerText = "播放列表 (" + songs.length + ")";
                     renderPlaylistView();
-                    switchTrack(0, false); // 默认载入第一首，不自动触发播放
+                    switchTrack(0, false); 
                 } else {
                     titleElem.innerText = "歌单为空或解析失败";
                 }
             })
             .catch(function(err) {
-                console.error(err);
                 titleElem.innerText = "无法加载歌单";
             });
 
-        // 2. 渲染歌单 DOM 结构
+        // 2. 渲染右侧列表
         function renderPlaylistView() {
             var html = '';
             for (var i = 0; i < songs.length; i++) {
                 html += '<li class="playlist-item" id="track-' + i + '" data-index="' + i + '">' +
-                            '<span class="item-name">' + (i + 1) + '. ' + songs[i].name + '</span>' +
-                            '<span class="item-artist">' + songs[i].artist + '</span>' +
+                            '<div class="item-name">' + (i + 1) + '. ' + songs[i].name + '</div>' +
+                            '<div class="item-artist">' + songs[i].artist + '</div>' +
                         '</li>';
             }
             playlistListElem.innerHTML = html;
 
-            // 绑定列表项点击事件
+            // 为每个列表项绑定切歌事件
             var items = playlistListElem.getElementsByClassName('playlist-item');
             for (var j = 0; j < items.length; j++) {
                 items[j].addEventListener('click', function() {
@@ -336,37 +384,36 @@
             }
         }
 
-        // 3. 切换曲目核心逻辑
+        // 3. 核心切歌逻辑
         function switchTrack(index, shouldPlay) {
             if (index < 0 || index >= songs.length) return;
 
-            // 维护列表高亮状态
+            // 更新右侧列表高亮状态
             var oldActive = playlistListElem.querySelector('.playlist-item.active');
             if (oldActive) oldActive.classList.remove('active');
             
             var newActive = document.getElementById('track-' + index);
             if (newActive) {
                 newActive.classList.add('active');
-                // 让当前播放歌曲在歌单列表中平滑滚动可见
+                // 让选中的歌曲在列表中可见
                 newActive.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
             currentIndex = index;
             var track = songs[index];
 
-            // 填入基础元数据 (直接使用接口返回的直链)
             titleElem.innerText = track.name;
             artistElem.innerText = track.artist;
             coverElem.src = track.pic;
             audioElem.src = track.url;
 
-            // 重置歌词状态
+            // 清理上一首歌词
             parsedLrc = [];
             currentLrcIndex = -1;
             lrcListElem.innerHTML = '<li class="lrc-line">歌词加载中...</li>';
             lrcContainerElem.scrollTop = 0;
 
-            // 异步获取歌词
+            // 获取新歌词
             if (track.lrc) {
                 fetch(track.lrc)
                     .then(function(res) { return res.text(); })
@@ -389,7 +436,7 @@
             }
         }
 
-        // 4. 歌词流解析器
+        // 4. 解析与渲染歌词
         function parseLrc(text) {
             var lines = text.split('\n');
             var matchReg = /\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/;
@@ -405,7 +452,6 @@
                     if (match[3] && match[3].length === 2) { ms *= 10; }
                     
                     var time = min * 60 + sec + ms / 1000;
-                    // 清除时间戳标记，完整保留歌词文本与尾随括号的翻译内容
                     var lrcStr = line.replace(/\[\d{2,}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
                     if (lrcStr) {
                         parsedLrc.push({ time: time, text: lrcStr });
@@ -426,7 +472,7 @@
             lrcListElem.innerHTML = html;
         }
 
-        // 5. 播放器基础事件控制
+        // 5. 播放控制与进度事件
         var playBtn = document.getElementById('play-btn');
         var prevBtn = document.getElementById('prev-btn');
         var nextBtn = document.getElementById('next-btn');
@@ -460,14 +506,12 @@
             switchTrack(targetIndex, true);
         });
 
-        // 自动切歌：当前歌曲播放完毕后自动步进到下一首
         audioElem.addEventListener('ended', function() {
             if (songs.length === 0) return;
             var targetIndex = (currentIndex + 1) % songs.length;
             switchTrack(targetIndex, true);
         });
 
-        // 进度与歌词高亮刷新
         audioElem.addEventListener('timeupdate', function() {
             var current = audioElem.currentTime;
             var duration = audioElem.duration;
@@ -479,7 +523,6 @@
                 durationElem.innerText = formatTime(duration);
             }
 
-            // 歌词滑动核心逻辑
             if (parsedLrc.length > 0) {
                 var newIndex = -1;
                 for (var i = 0; i < parsedLrc.length; i++) {
@@ -509,7 +552,6 @@
             }
         });
 
-        // 进度条手动定位
         progressContainer.addEventListener('click', function(e) {
             var rect = this.getBoundingClientRect();
             var clickX = e.clientX - rect.left;
